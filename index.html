@@ -1,0 +1,1945 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Loramp - Diễn Đàn Sinh Viên</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <!-- Google Fonts: Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f1f5f9;
+            color: #0f172a;
+        }
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f1f5f9;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 9999px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+        .fade-in {
+            animation: fadeIn 0.2s ease-out forwards;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(6px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .badge-shine {
+            position: relative;
+            overflow: hidden;
+        }
+        .badge-shine::after {
+            content: "";
+            position: absolute;
+            top: -50%;
+            left: -60%;
+            width: 40%;
+            height: 200%;
+            background: rgba(255,255,255,0.35);
+            transform: rotate(30deg);
+            animation: shine 4s infinite;
+        }
+        @keyframes shine {
+            0% { left: -60%; }
+            20% { left: 120%; }
+            100% { left: 120%; }
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col selection:bg-indigo-600 selection:text-white">
+
+    <!-- Top Navigation Bar -->
+    <header class="sticky top-0 z-30 bg-white/95 backdrop-blur-md border-b border-slate-200 shadow-sm">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex flex-wrap items-center justify-between py-3 gap-3">
+                
+                <!-- Brand Logo -->
+                <div class="flex items-center gap-3 cursor-pointer" onclick="window.app.switchMainTab('forum')">
+                    <div class="w-11 h-11 rounded-2xl bg-gradient-to-br from-indigo-600 to-blue-500 flex items-center justify-center text-white shadow-md shadow-indigo-200">
+                        <i class="fa-solid fa-graduation-cap text-xl"></i>
+                    </div>
+                    <div>
+                        <div class="flex items-center gap-2">
+                            <h1 class="text-lg sm:text-xl font-extrabold tracking-tight text-slate-900">Loramp</h1>
+                            <span id="syncStatusBadge" class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-medium bg-emerald-50 text-emerald-700 border border-emerald-200">
+                                <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                                Đã lưu trữ
+                            </span>
+                        </div>
+                        <p class="text-xs text-slate-500 hidden sm:block">Diễn Đàn Sinh Viên</p>
+                    </div>
+                </div>
+
+                <!-- Main Navigation Tabs -->
+                <nav class="flex items-center bg-slate-100 p-1 rounded-xl border border-slate-200/80 order-3 lg:order-2 w-full lg:w-auto justify-center">
+                    <button id="tabBtnForum" onclick="window.app.switchMainTab('forum')" class="flex-1 lg:flex-initial flex items-center justify-center gap-2 px-4 py-2 rounded-lg text-xs sm:text-sm font-semibold transition-all bg-white text-indigo-600 shadow-sm">
+                        <i class="fa-solid fa-comments"></i>
+                        <span>Diễn Đàn</span>
+                        <span id="navPostCount" class="px-1.5 py-0.5 text-[11px] rounded-full bg-indigo-50 text-indigo-600 font-bold">0</span>
+                    </button>
+                    <button id="tabBtnDirectory" onclick="window.app.switchMainTab('directory')" class="flex-1 lg:flex-initial flex items-center justify-center gap-2 px-4 py-2 rounded-lg text-xs sm:text-sm font-semibold transition-all text-slate-600 hover:text-slate-900">
+                        <i class="fa-solid fa-id-card-clip"></i>
+                        <span>Hồ Sơ Học Sinh</span>
+                        <span id="navStudentCount" class="px-1.5 py-0.5 text-[11px] rounded-full bg-slate-200 text-slate-700 font-bold">0</span>
+                    </button>
+                    <button id="tabBtnHierarchy" onclick="window.app.switchMainTab('hierarchy')" class="flex-1 lg:flex-initial flex items-center justify-center gap-2 px-4 py-2 rounded-lg text-xs sm:text-sm font-semibold transition-all text-slate-600 hover:text-slate-900">
+                        <i class="fa-solid fa-ranking-star"></i>
+                        <span>Bảng Phân Cấp</span>
+                    </button>
+                </nav>
+
+                <!-- Active Student Switcher (For testing permissions & roles easily) -->
+                <div class="flex items-center gap-2 sm:gap-3 order-2 lg:order-3">
+                    <div class="relative">
+                        <label for="currentUserSelect" class="block text-[10px] font-semibold uppercase tracking-wider text-slate-400">Tài khoản đang dùng (Đổi để thử quyền):</label>
+                        <div class="flex items-center gap-2 mt-0.5">
+                            <select id="currentUserSelect" onchange="window.app.changeCurrentUser(this.value)" class="bg-slate-50 hover:bg-slate-100 border border-slate-300 text-slate-800 text-xs sm:text-sm font-semibold rounded-xl px-3 py-1.5 pr-8 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition cursor-pointer">
+                                <!-- Populated via JS -->
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content Container -->
+    <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6">
+        
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+            
+            <!-- Left Sidebar: Active User Card & Quick Hierarchy Info -->
+            <aside class="lg:col-span-4 xl:col-span-3 space-y-5">
+                
+                <!-- Active Student Profile Card -->
+                <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+                    <div id="activeUserBanner" class="h-20 bg-gradient-to-r from-indigo-600 via-blue-600 to-sky-500 relative">
+                        <button onclick="window.app.openEditCurrentStudent()" title="Chỉnh sửa hồ sơ cá nhân" class="absolute top-3 right-3 bg-white/20 hover:bg-white/30 backdrop-blur-sm text-white text-xs px-2.5 py-1 rounded-lg font-medium flex items-center gap-1.5 transition">
+                            <i class="fa-solid fa-pen-to-square"></i> Sửa hồ sơ
+                        </button>
+                    </div>
+                    <div class="px-5 pb-5">
+                        <div class="relative flex justify-between items-end -mt-10 mb-3">
+                            <div id="activeUserAvatar" class="w-16 h-16 rounded-2xl bg-indigo-600 text-white font-bold text-xl flex items-center justify-center ring-4 ring-white shadow-md">
+                                HS
+                            </div>
+                            <div id="activeUserRankBadge">
+                                <!-- Rank badge injected by JS -->
+                            </div>
+                        </div>
+
+                        <h2 id="activeUserName" class="text-base font-bold text-slate-900">Nguyễn Minh Anh</h2>
+                        <div class="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-slate-500 mt-1">
+                            <span class="inline-flex items-center gap-1 font-medium text-slate-700">
+                                <i class="fa-solid fa-hashtag text-indigo-500"></i>
+                                <span id="activeUserCode">HS1201</span>
+                            </span>
+                            <span>•</span>
+                            <span class="inline-flex items-center gap-1 font-medium text-slate-700">
+                                <i class="fa-solid fa-users-rectangle text-indigo-500"></i>
+                                Lớp <span id="activeUserClass">12A1</span>
+                            </span>
+                        </div>
+
+                        <!-- Reputation Progress Bar -->
+                        <div class="mt-4 p-3 bg-slate-50 rounded-xl border border-slate-200/70">
+                            <div class="flex items-center justify-between text-xs mb-1.5">
+                                <span class="font-semibold text-slate-600 flex items-center gap-1">
+                                    <i class="fa-solid fa-bolt text-amber-500"></i> Điểm cống hiến:
+                                </span>
+                                <span id="activeUserPoints" class="font-extrabold text-indigo-600 text-sm">150 điểm</span>
+                            </div>
+                            <div class="w-full h-2 bg-slate-200 rounded-full overflow-hidden">
+                                <div id="activeUserProgressBar" class="h-full bg-gradient-to-r from-indigo-500 to-amber-500 rounded-full transition-all duration-300" style="width: 100%"></div>
+                            </div>
+                            <p id="activeUserNextRankHint" class="text-[11px] text-slate-500 mt-1.5">
+                                Đã đạt danh hiệu Học Bá (≥ 100 điểm)
+                            </p>
+                        </div>
+
+                        <!-- Student Strong Subjects & Role Permissions -->
+                        <div class="mt-4 space-y-2.5 text-xs">
+                            <div>
+                                <span class="text-slate-400 font-medium block mb-1">Môn thế mạnh / CLB:</span>
+                                <div id="activeUserSubjects" class="flex flex-wrap gap-1">
+                                    <!-- Tags -->
+                                </div>
+                            </div>
+                            <div class="pt-2 border-t border-slate-100">
+                                <span class="text-slate-400 font-medium block mb-1">Quyền hạn cấp bậc hiện tại:</span>
+                                <p id="activeUserPermissionsText" class="text-slate-600 leading-relaxed bg-indigo-50/60 text-indigo-950 px-2.5 py-2 rounded-lg border border-indigo-100 font-medium">
+                                    <!-- Permissions text -->
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Hierarchy System Legend Card -->
+                <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-5">
+                    <div class="flex items-center justify-between mb-3">
+                        <h3 class="text-sm font-bold text-slate-900 flex items-center gap-2">
+                            <i class="fa-solid fa-sitemap text-indigo-600"></i>
+                            Hệ Thống Cấp Bậc
+                        </h3>
+                        <button onclick="window.app.switchMainTab('hierarchy')" class="text-xs font-semibold text-indigo-600 hover:underline">Chi tiết</button>
+                    </div>
+                    <div class="space-y-2.5 text-xs">
+                        <div class="flex items-start gap-2.5 p-2 rounded-xl bg-rose-50/70 border border-rose-100">
+                            <div class="w-7 h-7 rounded-lg bg-rose-600 text-white flex items-center justify-center shrink-0 mt-0.5">
+                                <i class="fa-solid fa-shield-halved"></i>
+                            </div>
+                            <div>
+                                <div class="font-bold text-rose-900">Cấp 1: Ban Quản Trị (Admin)</div>
+                                <p class="text-rose-700/90 text-[11px]">Toàn quyền quản lý hồ sơ HS, phân quyền, ghim & xóa mọi bài viết.</p>
+                            </div>
+                        </div>
+
+                        <div class="flex items-start gap-2.5 p-2 rounded-xl bg-purple-50/70 border border-purple-100">
+                            <div class="w-7 h-7 rounded-lg bg-purple-600 text-white flex items-center justify-center shrink-0 mt-0.5">
+                                <i class="fa-solid fa-star"></i>
+                            </div>
+                            <div>
+                                <div class="font-bold text-purple-900">Cấp 2: Cán Bộ Lớp (Mod)</div>
+                                <p class="text-purple-700/90 text-[11px]">Lớp trưởng / Bí thư: Duyệt bài, ghim thông báo & xóa bình luận vi phạm.</p>
+                            </div>
+                        </div>
+
+                        <div class="flex items-start gap-2.5 p-2 rounded-xl bg-amber-50/70 border border-amber-100">
+                            <div class="w-7 h-7 rounded-lg bg-amber-500 text-white flex items-center justify-center shrink-0 mt-0.5">
+                                <i class="fa-solid fa-crown"></i>
+                            </div>
+                            <div>
+                                <div class="font-bold text-amber-900">Cấp 3: Học Bá (≥ 100 điểm)</div>
+                                <p class="text-amber-800/90 text-[11px]">Tự động thăng cấp khi đủ 100 điểm. Huy hiệu vàng nổi bật trên diễn đàn.</p>
+                            </div>
+                        </div>
+
+                        <div class="flex items-start gap-2.5 p-2 rounded-xl bg-emerald-50/70 border border-emerald-100">
+                            <div class="w-7 h-7 rounded-lg bg-emerald-600 text-white flex items-center justify-center shrink-0 mt-0.5">
+                                <i class="fa-solid fa-seedling"></i>
+                            </div>
+                            <div>
+                                <div class="font-bold text-emerald-900">Cấp 4: Thành Viên (< 100 điểm)</div>
+                                <p class="text-emerald-700/90 text-[11px]">Đăng bài (+15đ), bình luận (+5đ), nhận lượt thích (+10đ) để tích lũy lên cấp.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Top Contributors Mini Leaderboard -->
+                <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-5">
+                    <div class="flex items-center justify-between mb-3">
+                        <h3 class="text-sm font-bold text-slate-900 flex items-center gap-2">
+                            <i class="fa-solid fa-trophy text-amber-500"></i>
+                            Top Học Sinh Tích Cực
+                        </h3>
+                    </div>
+                    <div id="sidebarLeaderboard" class="space-y-2.5">
+                        <!-- Populated by JS -->
+                    </div>
+                </div>
+
+            </aside>
+
+            <!-- Right Main Area (Dynamic Views: Forum, Directory, Hierarchy) -->
+            <section class="lg:col-span-8 xl:col-span-9">
+
+                <!-- ==================== VIEW 1: FORUM (BẢNG TIN DIỄN ĐÀN) ==================== -->
+                <div id="viewForum" class="space-y-5 fade-in">
+                    
+                    <!-- Create Post Banner + Search Bar -->
+                    <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-4 sm:p-5">
+                        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-100">
+                            <div class="flex items-center gap-3">
+                                <div id="composerUserAvatar" class="w-10 h-10 rounded-xl bg-indigo-600 text-white font-bold flex items-center justify-center shrink-0">
+                                    HS
+                                </div>
+                                <div>
+                                    <h2 class="text-sm sm:text-base font-bold text-slate-900">Chia sẻ kiến thức hoặc đặt câu hỏi cho toàn trường</h2>
+                                    <p class="text-xs text-slate-500">Đăng bài nhận ngay <span class="font-semibold text-indigo-600">+15 điểm</span> • Trả lời bài tập <span class="font-semibold text-indigo-600">+5 điểm</span></p>
+                                </div>
+                            </div>
+                            <button onclick="window.app.openNewPostModal()" class="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 active:scale-[0.99] text-white font-semibold text-sm shadow-sm shadow-indigo-200 transition shrink-0">
+                                <i class="fa-solid fa-plus"></i>
+                                <span>Tạo Bài Viết Mới</span>
+                            </button>
+                        </div>
+
+                        <!-- Category Pills & Search Input -->
+                        <div class="pt-4 flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3">
+                            <!-- Category Filter Buttons -->
+                            <div id="forumCategoryPills" class="flex items-center gap-1.5 overflow-x-auto pb-1 md:pb-0">
+                                <!-- Injected by JS -->
+                            </div>
+
+                            <!-- Search Posts -->
+                            <div class="relative min-w-[220px]">
+                                <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
+                                <input id="forumSearchInput" type="text" oninput="window.app.renderForum()" placeholder="Tìm tiêu đề, môn học, tác giả..." class="w-full pl-8 pr-3 py-1.5 bg-slate-50 border border-slate-200 rounded-xl text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:bg-white transition">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Posts Feed Container -->
+                    <div id="forumPostsContainer" class="space-y-4">
+                        <!-- Populated by JS -->
+                    </div>
+                </div>
+
+                <!-- ==================== VIEW 2: STUDENT DIRECTORY (HỒ SƠ HỌC SINH) ==================== -->
+                <div id="viewDirectory" class="space-y-5 hidden fade-in">
+                    
+                    <!-- Directory Summary Stats -->
+                    <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
+                        <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm">
+                            <div class="text-xs font-medium text-slate-500">Tổng hồ sơ học sinh</div>
+                            <div class="mt-1 flex items-baseline justify-between">
+                                <span id="statTotalStudents" class="text-2xl font-extrabold text-slate-900">0</span>
+                                <span class="text-xs text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded-full font-semibold"><i class="fa-solid fa-user-graduate"></i> Toàn trường</span>
+                            </div>
+                        </div>
+                        <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm">
+                            <div class="text-xs font-medium text-slate-500">Ban Quản Trị & Cán Bộ</div>
+                            <div class="mt-1 flex items-baseline justify-between">
+                                <span id="statTotalStaff" class="text-2xl font-extrabold text-purple-600">0</span>
+                                <span class="text-xs text-purple-700 bg-purple-50 px-2 py-0.5 rounded-full font-semibold"><i class="fa-solid fa-star"></i> Nòng cốt</span>
+                            </div>
+                        </div>
+                        <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm">
+                            <div class="text-xs font-medium text-slate-500">Danh hiệu Học Bá</div>
+                            <div class="mt-1 flex items-baseline justify-between">
+                                <span id="statTotalScholars" class="text-2xl font-extrabold text-amber-500">0</span>
+                                <span class="text-xs text-amber-700 bg-amber-50 px-2 py-0.5 rounded-full font-semibold"><i class="fa-solid fa-crown"></i> ≥ 100đ</span>
+                            </div>
+                        </div>
+                        <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm">
+                            <div class="text-xs font-medium text-slate-500">Điểm tích lũy TB</div>
+                            <div class="mt-1 flex items-baseline justify-between">
+                                <span id="statAvgPoints" class="text-2xl font-extrabold text-emerald-600">0</span>
+                                <span class="text-xs text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full font-semibold"><i class="fa-solid fa-chart-line"></i> Điểm</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Directory Action & Filter Bar -->
+                    <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-4 sm:p-5 space-y-4">
+                        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                            <div>
+                                <h2 class="text-base sm:text-lg font-bold text-slate-900 flex items-center gap-2">
+                                    <i class="fa-solid fa-address-book text-indigo-600"></i>
+                                    Hệ Thống Lưu Trữ Hồ Sơ Học Sinh
+                                </h2>
+                                <p class="text-xs text-slate-500">Tra cứu thông tin, lớp học, môn thế mạnh và quản lý cấp bậc học sinh.</p>
+                            </div>
+                            <div class="flex flex-wrap items-center gap-2">
+                                <button onclick="window.app.exportStudentsCSV()" class="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl border border-slate-200 hover:bg-slate-50 text-slate-700 font-semibold text-xs transition">
+                                    <i class="fa-solid fa-file-export text-slate-500"></i>
+                                    <span>Xuất danh sách (CSV)</span>
+                                </button>
+                                <button onclick="window.app.openStudentModal()" class="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-xs sm:text-sm shadow-sm transition">
+                                    <i class="fa-solid fa-user-plus"></i>
+                                    <span>Thêm Học Sinh Mới</span>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Search and Filters -->
+                        <div class="grid grid-cols-1 sm:grid-cols-12 gap-3 pt-2 border-t border-slate-100">
+                            <div class="sm:col-span-5 relative">
+                                <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
+                                <input id="studentSearchInput" type="text" oninput="window.app.renderDirectory()" placeholder="Tìm theo Mã HS, Họ tên, Lớp, Môn thế mạnh..." class="w-full pl-9 pr-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:bg-white">
+                            </div>
+                            <div class="sm:col-span-3">
+                                <select id="studentGradeFilter" onchange="window.app.renderDirectory()" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs sm:text-sm text-slate-700 font-medium focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                                    <option value="ALL">Tất cả Khối / Lớp</option>
+                                    <option value="10">Khối 10</option>
+                                    <option value="11">Khối 11</option>
+                                    <option value="12">Khối 12</option>
+                                </select>
+                            </div>
+                            <div class="sm:col-span-4">
+                                <select id="studentRankFilter" onchange="window.app.renderDirectory()" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs sm:text-sm text-slate-700 font-medium focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                                    <option value="ALL">Tất cả Cấp bậc phân quyền</option>
+                                    <option value="ADMIN">Ban Quản Trị (Admin)</option>
+                                    <option value="MOD">Cán Bộ Lớp (Moderator)</option>
+                                    <option value="SCHOLAR">Học Bá (≥ 100 điểm)</option>
+                                    <option value="MEMBER">Thành Viên (< 100 điểm)</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Student Records Table -->
+                    <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-left border-collapse">
+                                <thead>
+                                    <tr class="bg-slate-50/80 border-b border-slate-200 text-[11px] font-bold uppercase tracking-wider text-slate-500">
+                                        <th class="py-3.5 px-4">Mã HS & Họ Tên</th>
+                                        <th class="py-3.5 px-3">Lớp / Khối</th>
+                                        <th class="py-3.5 px-3">Cấp Bậc Hiện Tại</th>
+                                        <th class="py-3.5 px-3">Điểm Tích Lũy</th>
+                                        <th class="py-3.5 px-3">Môn Thế Mạnh / CLB</th>
+                                        <th class="py-3.5 px-4 text-right">Thao Tác</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="studentDirectoryTableBody" class="divide-y divide-slate-200/70 text-xs sm:text-sm">
+                                    <!-- Populated by JS -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                </div>
+
+                <!-- ==================== VIEW 3: HIERARCHY & LEADERBOARD (BẢNG PHÂN CẤP) ==================== -->
+                <div id="viewHierarchy" class="space-y-5 hidden fade-in">
+                    
+                    <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-5 sm:p-6">
+                        <h2 class="text-lg font-bold text-slate-900 flex items-center gap-2">
+                            <i class="fa-solid fa-layer-group text-indigo-600"></i>
+                            Cơ Chế Phân Cấp & Quyền Hạn Thành Viên EduForum
+                        </h2>
+                        <p class="text-xs sm:text-sm text-slate-600 mt-1">
+                            Diễn đàn áp dụng mô hình phân cấp kết hợp giữa <strong>Chức vụ quản lý</strong> (Ban Quản Trị, Cán Bộ Lớp) và <strong>Điểm cống hiến học tập</strong> (Học Bá, Thành Viên) để khuyến khích học sinh trao đổi bài vở lành mạnh.
+                        </p>
+
+                        <!-- 4 Hierarchy Cards -->
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-5">
+                            <!-- Tier 1 -->
+                            <div class="p-4 rounded-2xl border-2 border-rose-200 bg-gradient-to-br from-rose-50/80 to-white">
+                                <div class="flex items-center justify-between mb-2">
+                                    <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-rose-600 text-white shadow-sm">
+                                        <i class="fa-solid fa-shield-halved"></i> CẤP 1: BAN QUẢN TRỊ
+                                    </span>
+                                    <span class="text-xs font-semibold text-rose-700">Giáo viên / Admin trường</span>
+                                </div>
+                                <ul class="text-xs text-slate-700 space-y-1.5 mt-3">
+                                    <li class="flex items-center gap-2"><i class="fa-solid fa-circle-check text-rose-600"></i> Toàn quyền thêm, sửa, xóa hồ sơ học sinh toàn trường.</li>
+                                    <li class="flex items-center gap-2"><i class="fa-solid fa-circle-check text-rose-600"></i> Bổ nhiệm hoặc thay đổi chức vụ (Cán bộ lớp, Ban quản trị).</li>
+                                    <li class="flex items-center gap-2"><i class="fa-solid fa-circle-check text-rose-600"></i> Ghim thông báo quan trọng lên đầu diễn đàn & xóa bài vi phạm.</li>
+                                </ul>
+                            </div>
+
+                            <!-- Tier 2 -->
+                            <div class="p-4 rounded-2xl border-2 border-purple-200 bg-gradient-to-br from-purple-50/80 to-white">
+                                <div class="flex items-center justify-between mb-2">
+                                    <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-purple-600 text-white shadow-sm">
+                                        <i class="fa-solid fa-star"></i> CẤP 2: CÁN BỘ LỚP
+                                    </span>
+                                    <span class="text-xs font-semibold text-purple-700">Lớp trưởng / Bí thư / Chủ nhiệm CLB</span>
+                                </div>
+                                <ul class="text-xs text-slate-700 space-y-1.5 mt-3">
+                                    <li class="flex items-center gap-2"><i class="fa-solid fa-circle-check text-purple-600"></i> Được phép Ghim / Bỏ ghim các bài viết học tập và thông báo lớp.</li>
+                                    <li class="flex items-center gap-2"><i class="fa-solid fa-circle-check text-purple-600"></i> Kiểm duyệt và xóa bài viết hoặc bình luận không phù hợp.</li>
+                                    <li class="flex items-center gap-2"><i class="fa-solid fa-circle-check text-purple-600"></i> Cập nhật hồ sơ học sinh mới vào danh bạ lớp.</li>
+                                </ul>
+                            </div>
+
+                            <!-- Tier 3 -->
+                            <div class="p-4 rounded-2xl border-2 border-amber-200 bg-gradient-to-br from-amber-50/80 to-white">
+                                <div class="flex items-center justify-between mb-2">
+                                    <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-amber-500 text-white shadow-sm">
+                                        <i class="fa-solid fa-crown"></i> CẤP 3: HỌC BÁ (≥ 100 ĐIỂM)
+                                    </span>
+                                    <span class="text-xs font-semibold text-amber-700">Tự động thăng cấp theo điểm</span>
+                                </div>
+                                <ul class="text-xs text-slate-700 space-y-1.5 mt-3">
+                                    <li class="flex items-center gap-2"><i class="fa-solid fa-circle-check text-amber-600"></i> Tự động kích hoạt khi học sinh đạt từ <strong>100 điểm tích lũy</strong> trở lên.</li>
+                                    <li class="flex items-center gap-2"><i class="fa-solid fa-circle-check text-amber-600"></i> Nhận huy hiệu Học Bá Vàng trên mọi bài đăng và bình luận.</li>
+                                    <li class="flex items-center gap-2"><i class="fa-solid fa-circle-check text-amber-600"></i> Vinh danh trên Bảng Vàng Học Tập của trường.</li>
+                                </ul>
+                            </div>
+
+                            <!-- Tier 4 -->
+                            <div class="p-4 rounded-2xl border-2 border-emerald-200 bg-gradient-to-br from-emerald-50/80 to-white">
+                                <div class="flex items-center justify-between mb-2">
+                                    <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-emerald-600 text-white shadow-sm">
+                                        <i class="fa-solid fa-seedling"></i> CẤP 4: THÀNH VIÊN (< 100 ĐIỂM)
+                                    </span>
+                                    <span class="text-xs font-semibold text-emerald-700">Mặc định khi tạo hồ sơ</span>
+                                </div>
+                                <ul class="text-xs text-slate-700 space-y-1.5 mt-3">
+                                    <li class="flex items-center gap-2"><i class="fa-solid fa-circle-check text-emerald-600"></i> Đăng câu hỏi, chia sẻ tài liệu học tập (+15 điểm/bài).</li>
+                                    <li class="flex items-center gap-2"><i class="fa-solid fa-circle-check text-emerald-600"></i> Tham gia bình luận giải bài tập (+5 điểm/bình luận).</li>
+                                    <li class="flex items-center gap-2"><i class="fa-solid fa-circle-check text-emerald-600"></i> Nhận lượt yêu thích từ bạn bè (+10 điểm/lượt thích).</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Full Grouped Hierarchy Tree -->
+                    <div id="hierarchyGroupsContainer" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <!-- Populated by JS -->
+                    </div>
+                </div>
+
+            </section>
+        </div>
+    </main>
+
+    <!-- ==================== MODAL 1: CREATE NEW POST ==================== -->
+    <div id="modalNewPost" class="fixed inset-0 z-50 hidden bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl max-w-xl w-full shadow-2xl border border-slate-200 overflow-hidden fade-in">
+            <div class="px-6 py-4 bg-slate-50 border-b border-slate-200 flex items-center justify-between">
+                <h3 class="text-base font-bold text-slate-900 flex items-center gap-2">
+                    <i class="fa-solid fa-pen-nib text-indigo-600"></i>
+                    Đăng Bài Viết Mới Lên Diễn Đàn
+                </h3>
+                <button onclick="window.app.closeModal('modalNewPost')" class="w-8 h-8 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-200/60 flex items-center justify-center transition">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+            <form id="formNewPost" onsubmit="window.app.submitNewPost(event)" class="p-6 space-y-4">
+                <div>
+                    <label class="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1.5">Tiêu đề bài viết *</label>
+                    <input id="postTitleInput" type="text" required placeholder="VD: Tổng hợp công thức đạo hàm và nguyên hàm Toán 12..." class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1.5">Chuyên mục *</label>
+                        <select id="postCategoryInput" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                            <option value="Góc học tập">📚 Góc học tập</option>
+                            <option value="Hỏi đáp bài tập">💡 Hỏi đáp bài tập</option>
+                            <option value="Thông báo chung">📢 Thông báo chung</option>
+                            <option value="Ngoại khóa & CLB">🎸 Ngoại khóa & CLB</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1.5">Thẻ môn học / Chủ đề</label>
+                        <input id="postTagInput" type="text" placeholder="VD: Toán 12, Tiếng Anh, Vật Lý..." class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1.5">Nội dung chi tiết *</label>
+                    <textarea id="postContentInput" rows="5" required placeholder="Nhập nội dung câu hỏi, bài thảo luận hoặc thông báo của bạn..." class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"></textarea>
+                </div>
+
+                <div id="pinPostCheckboxWrapper" class="hidden items-center gap-2 p-3 rounded-xl bg-amber-50 border border-amber-200 text-xs text-amber-900">
+                    <input id="postPinInput" type="checkbox" class="w-4 h-4 rounded text-indigo-600 focus:ring-indigo-500">
+                    <label for="postPinInput" class="font-semibold cursor-pointer">Ghim bài viết này lên đầu diễn đàn (Quyền Ban Quản Trị / Cán Bộ Lớp)</label>
+                </div>
+
+                <div class="flex items-center justify-end gap-2 pt-2 border-t border-slate-100">
+                    <button type="button" onclick="window.app.closeModal('modalNewPost')" class="px-4 py-2 rounded-xl border border-slate-300 text-slate-700 font-semibold text-xs sm:text-sm hover:bg-slate-50">Hủy</button>
+                    <button type="submit" class="px-5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-xs sm:text-sm shadow-sm flex items-center gap-1.5">
+                        <i class="fa-solid fa-paper-plane"></i> Đăng bài (+15 điểm)
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- ==================== MODAL 2: ADD / EDIT STUDENT PROFILE ==================== -->
+    <div id="modalStudent" class="fixed inset-0 z-50 hidden bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl max-w-lg w-full shadow-2xl border border-slate-200 overflow-hidden fade-in">
+            <div class="px-6 py-4 bg-slate-50 border-b border-slate-200 flex items-center justify-between">
+                <h3 id="modalStudentTitle" class="text-base font-bold text-slate-900 flex items-center gap-2">
+                    <i class="fa-solid fa-user-graduate text-indigo-600"></i>
+                    Thêm Hồ Sơ Học Sinh
+                </h3>
+                <button onclick="window.app.closeModal('modalStudent')" class="w-8 h-8 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-200/60 flex items-center justify-center transition">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+            <form id="formStudent" onsubmit="window.app.submitStudentForm(event)" class="p-6 space-y-4">
+                <input type="hidden" id="studentIdHidden">
+
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                    <div>
+                        <label class="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1">Mã Học Sinh *</label>
+                        <input id="studentCodeInput" type="text" required placeholder="VD: HS1205" class="w-full px-3 py-2 rounded-xl border border-slate-300 text-sm font-semibold uppercase focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                    </div>
+                    <div class="sm:col-span-2">
+                        <label class="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1">Họ và Tên Học Sinh *</label>
+                        <input id="studentNameInput" type="text" required placeholder="VD: Trần Hoàng Nam" class="w-full px-3 py-2 rounded-xl border border-slate-300 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1">Lớp / Khối *</label>
+                        <input id="studentClassInput" type="text" required placeholder="VD: 10A1, 11B2, 12A1" class="w-full px-3 py-2 rounded-xl border border-slate-300 text-sm uppercase focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1">Điểm tích lũy học tập</label>
+                        <input id="studentPointsInput" type="number" min="0" max="9999" value="20" required class="w-full px-3 py-2 rounded-xl border border-slate-300 text-sm font-semibold text-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                        <span class="text-[10px] text-slate-400">Đạt ≥ 100 điểm sẽ tự động lên bậc Học Bá</span>
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1">Phân cấp chức vụ</label>
+                    <select id="studentRoleInput" class="w-full px-3 py-2 rounded-xl border border-slate-300 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                        <option value="STUDENT">Học Sinh (Tự động xét Thành Viên / Học Bá theo điểm)</option>
+                        <option value="MOD">Cán Bộ Lớp (Lớp trưởng / Bí thư / Chủ nhiệm CLB)</option>
+                        <option value="ADMIN">Ban Quản Trị (Giáo viên cố vấn / Admin trường)</option>
+                    </select>
+                    <p id="rolePermissionHint" class="text-[11px] text-amber-700 mt-1 hidden">
+                        <i class="fa-solid fa-lock"></i> Chỉ Ban Quản Trị mới có thể thay đổi chức vụ Cán Bộ Lớp / Admin.
+                    </p>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1">Môn thế mạnh / CLB tham gia</label>
+                    <input id="studentSubjectsInput" type="text" placeholder="Ngăn cách bằng dấu phẩy, VD: Toán, Tin học, CLB Tiếng Anh" class="w-full px-3 py-2 rounded-xl border border-slate-300 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1">Ghi chú / Thành tích nổi bật</label>
+                    <textarea id="studentBioInput" rows="2" placeholder="VD: Giải Nhì HSG Tin học cấp Thành phố, Bí thư chi đoàn 12A1..." class="w-full px-3 py-2 rounded-xl border border-slate-300 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"></textarea>
+                </div>
+
+                <div class="flex items-center justify-end gap-2 pt-3 border-t border-slate-100">
+                    <button type="button" onclick="window.app.closeModal('modalStudent')" class="px-4 py-2 rounded-xl border border-slate-300 text-slate-700 font-semibold text-xs sm:text-sm hover:bg-slate-50">Đóng</button>
+                    <button type="submit" class="px-5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-xs sm:text-sm shadow-sm flex items-center gap-1.5">
+                        <i class="fa-solid fa-floppy-disk"></i> Lưu Hồ Sơ
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- ==================== MODAL 3: CONFIRMATION DIALOG ==================== -->
+    <div id="modalConfirm" class="fixed inset-0 z-50 hidden bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl max-w-sm w-full p-6 shadow-2xl border border-slate-200 text-center fade-in">
+            <div class="w-12 h-12 rounded-2xl bg-rose-100 text-rose-600 flex items-center justify-center mx-auto mb-3 text-xl">
+                <i class="fa-solid fa-triangle-exclamation"></i>
+            </div>
+            <h4 id="confirmTitle" class="text-base font-bold text-slate-900">Xác nhận xóa</h4>
+            <p id="confirmMessage" class="text-xs sm:text-sm text-slate-600 mt-1.5">Bạn có chắc chắn muốn thực hiện thao tác này không?</p>
+            <div class="flex items-center justify-center gap-2 mt-5">
+                <button onclick="window.app.closeModal('modalConfirm')" class="flex-1 py-2 rounded-xl border border-slate-300 text-slate-700 font-semibold text-xs sm:text-sm hover:bg-slate-50">Hủy bỏ</button>
+                <button id="confirmActionBtn" class="flex-1 py-2 rounded-xl bg-rose-600 hover:bg-rose-700 text-white font-semibold text-xs sm:text-sm shadow-sm">Đồng ý xóa</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Notification Container -->
+    <div id="toastContainer" class="fixed bottom-4 right-4 z-50 flex flex-col gap-2 max-w-xs w-full pointer-events-none"></div>
+
+    <!-- Application Logic + Firebase Firestore Integration -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, collection, doc, setDoc, deleteDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        // ============================================================================
+        // 1. INITIAL REALISTIC VIETNAMESE SEED DATA
+        // ============================================================================
+        const INITIAL_STUDENTS = [
+            {
+                id: "stu_1",
+                code: "BQT001",
+                name: "Thầy Lê Hoàng Sơn",
+                className: "BQT-GV",
+                role: "ADMIN", // ADMIN, MOD, or STUDENT
+                points: 350,
+                subjects: ["Toán Học", "Cố vấn Đoàn Trường"],
+                bio: "Giáo viên cố vấn Ban Quản Trị diễn đàn EduForum.",
+                avatarColor: "bg-rose-600"
+            },
+            {
+                id: "stu_2",
+                code: "HS1201",
+                name: "Nguyễn Minh Anh",
+                className: "12A1",
+                role: "MOD",
+                points: 185,
+                subjects: ["Tiếng Anh", "Ngữ Văn", "Bí thư Chi đoàn"],
+                bio: "Bí thư lớp 12A1, Chủ nhiệm CLB Tranh biện Tiếng Anh.",
+                avatarColor: "bg-purple-600"
+            },
+            {
+                id: "stu_3",
+                code: "HS1208",
+                name: "Trần Quốc Bảo",
+                className: "12A1",
+                role: "STUDENT", // >= 100 pts -> Học Bá
+                points: 145,
+                subjects: ["Vật Lý", "Toán Hình", "Tin Học"],
+                bio: "Giải Nhất HSG Vật Lý cấp Tỉnh, luôn sẵn sàng giải đáp bài tập khó.",
+                avatarColor: "bg-amber-500"
+            },
+            {
+                id: "stu_4",
+                code: "HS1104",
+                name: "Phạm Gia Hân",
+                className: "11B2",
+                role: "MOD",
+                points: 120,
+                subjects: ["Hóa Học", "Sinh Học", "Lớp trưởng 11B2"],
+                bio: "Lớp trưởng 11B2, phụ trách chuyên mục Góc học tập Khối 11.",
+                avatarColor: "bg-indigo-600"
+            },
+            {
+                id: "stu_5",
+                code: "HS1015",
+                name: "Đặng Tuấn Kiệt",
+                className: "10A3",
+                role: "STUDENT", // < 100 pts -> Thành Viên
+                points: 85,
+                subjects: ["Tin Học", "CLB Robotics"],
+                bio: "Học sinh lớp 10 đam mê lập trình thuật toán (còn 15 điểm nữa lên Học Bá!).",
+                avatarColor: "bg-emerald-600"
+            },
+            {
+                id: "stu_6",
+                code: "HS1022",
+                name: "Võ Ngọc Bảo Trâm",
+                className: "10A1",
+                role: "STUDENT",
+                points: 45,
+                subjects: ["Ngữ Văn", "Lịch Sử", "CLB Báo Chí"],
+                bio: "Thành viên mới khối 10, yêu thích viết lách và thiết kế.",
+                avatarColor: "bg-sky-600"
+            }
+        ];
+
+        const INITIAL_POSTS = [
+            {
+                id: "post_1",
+                authorId: "stu_1",
+                title: "[Thông Báo] Nội quy diễn đàn EduForum & Quy chế tính điểm phân cấp học sinh năm học mới",
+                category: "Thông báo chung",
+                tag: "Nội quy trường",
+                content: "Chào mừng toàn thể học sinh đến với EduForum! Mọi thành viên khi đăng bài chia sẻ tài liệu sẽ được +15 điểm, bình luận giải đáp bài tập +5 điểm, và nhận mỗi lượt yêu thích +10 điểm. Học sinh tích lũy đủ 100 điểm sẽ tự động được thăng cấp danh hiệu 'Học Bá' kèm huy hiệu Vàng vinh danh trên toàn trường!",
+                isPinned: true,
+                likes: ["stu_2", "stu_3", "stu_4", "stu_5"],
+                createdAt: Date.now() - 3600000 * 18,
+                comments: [
+                    {
+                        id: "cmt_1",
+                        authorId: "stu_2",
+                        content: "Lớp 12A1 đã nhận thông báo ạ! Chúng em sẽ tích cực chia sẻ đề cương ôn thi THPT Quốc gia lên diễn đàn.",
+                        createdAt: Date.now() - 3600000 * 15
+                    },
+                    {
+                        id: "cmt_2",
+                        authorId: "stu_5",
+                        content: "Em đang có 85 điểm rồi, phấn đấu trả lời thêm vài bài tập nữa là lên cấp Học Bá!",
+                        createdAt: Date.now() - 3600000 * 5
+                    }
+                ]
+            },
+            {
+                id: "post_2",
+                authorId: "stu_3",
+                title: "Chia sẻ phương pháp giải nhanh bài tập Dao động điều hòa & Con lắc lò xo (Vật Lý 12)",
+                category: "Góc học tập",
+                tag: "Vật Lý 12",
+                content: "Chào các bạn, mình vừa tổng hợp sơ đồ tư duy và 5 công thức giải nhanh bài toán thời gian trong dao động điều hòa bằng đường tròn lượng giác. Khi vật đi từ vị trí cân bằng ra biên A/2 sẽ mất T/12 giây. Bạn nào cần giải chi tiết câu nào trong đề cương thì bình luận bên dưới mình hướng dẫn nhé!",
+                isPinned: true,
+                likes: ["stu_1", "stu_2", "stu_4"],
+                createdAt: Date.now() - 3600000 * 8,
+                comments: [
+                    {
+                        id: "cmt_3",
+                        authorId: "stu_4",
+                        content: "Bài viết cực kỳ dễ hiểu! Cảm ơn Học Bá Quốc Bảo nhiều nha.",
+                        createdAt: Date.now() - 3600000 * 4
+                    }
+                ]
+            },
+            {
+                id: "post_3",
+                authorId: "stu_5",
+                title: "Nhờ anh chị giải thích giúp em bài toán quy hoạch động cơ bản bằng Python/C++ với ạ!",
+                category: "Hỏi đáp bài tập",
+                tag: "Tin Học 10",
+                content: "Em đang làm bài toán tìm dãy con tăng dài nhất (LIS) trong môn Tin học. Em dùng 2 vòng lặp lồng nhau nhưng chưa hiểu rõ cách truy vết lại các phần tử trong dãy. Anh chị Cán bộ lớp hoặc Học Bá nào rảnh chỉ giúp em ý tưởng với ạ!",
+                isPinned: false,
+                likes: ["stu_3"],
+                createdAt: Date.now() - 3600000 * 2,
+                comments: [
+                    {
+                        id: "cmt_4",
+                        authorId: "stu_3",
+                        content: "Em tạo thêm một mảng trace[i] lưu vị trí j trước đó tối ưu nhất nhé. Khi tìm được dp[i] = dp[j] + 1 thì gán trace[i] = j rồi lùi dần về đầu là in ra được kết quả!",
+                        createdAt: Date.now() - 3600000 * 1
+                    }
+                ]
+            }
+        ];
+
+        // ============================================================================
+        // 2. APPLICATION STATE & HIERARCHY HELPER FUNCTIONS
+        // ============================================================================
+        const state = {
+            students: [...INITIAL_STUDENTS],
+            posts: [...INITIAL_POSTS],
+            currentUserId: "stu_2", // Default to Nguyễn Minh Anh (Cán bộ lớp) or switchable
+            activeMainTab: "forum",
+            selectedCategory: "Tất cả",
+            openCommentPostIds: new Set(["post_1", "post_3"]),
+            db: null,
+            auth: null,
+            user: null,
+            appId: typeof __app_id !== 'undefined' ? __app_id : 'eduforum-vn-app',
+            isCloudConnected: false
+        };
+
+        const CATEGORIES = ["Tất cả", "Thông báo chung", "Góc học tập", "Hỏi đáp bài tập", "Ngoại khóa & CLB"];
+
+        // Compute effective rank tier based on role + points
+        function getHierarchyInfo(student) {
+            if (!student) {
+                return {
+                    key: "MEMBER",
+                    label: "Thành Viên",
+                    icon: "fa-seedling",
+                    badgeClass: "bg-emerald-100 text-emerald-800 border-emerald-200",
+                    solidClass: "bg-emerald-600 text-white",
+                    canModerate: false,
+                    canManageRoles: false,
+                    permissionsDesc: "Có quyền đăng bài thảo luận, bình luận giải bài và chỉnh sửa hồ sơ cá nhân."
+                };
+            }
+            if (student.role === "ADMIN") {
+                return {
+                    key: "ADMIN",
+                    label: "Ban Quản Trị",
+                    icon: "fa-shield-halved",
+                    badgeClass: "bg-rose-100 text-rose-800 border-rose-200 badge-shine",
+                    solidClass: "bg-rose-600 text-white",
+                    canModerate: true,
+                    canManageRoles: true,
+                    permissionsDesc: "Toàn quyền Quản Trị: Quản lý hồ sơ toàn trường, phân quyền chức vụ, ghim & xóa bất kỳ bài viết/bình luận nào."
+                };
+            }
+            if (student.role === "MOD") {
+                return {
+                    key: "MOD",
+                    label: "Cán Bộ Lớp",
+                    icon: "fa-star",
+                    badgeClass: "bg-purple-100 text-purple-800 border-purple-200",
+                    solidClass: "bg-purple-600 text-white",
+                    canModerate: true,
+                    canManageRoles: false,
+                    permissionsDesc: "Quyền Cán Bộ Lớp: Được phép Ghim thông báo, kiểm duyệt xóa bài viết/bình luận vi phạm và cập nhật danh sách học sinh."
+                };
+            }
+            if ((student.points || 0) >= 100) {
+                return {
+                    key: "SCHOLAR",
+                    label: "Học Bá",
+                    icon: "fa-crown",
+                    badgeClass: "bg-amber-100 text-amber-900 border-amber-300 badge-shine",
+                    solidClass: "bg-amber-500 text-white",
+                    canModerate: false,
+                    canManageRoles: false,
+                    permissionsDesc: "Danh hiệu Học Bá (≥ 100 điểm): Huy hiệu Vàng danh dự, đăng bài chia sẻ học thuật và sửa hồ sơ cá nhân."
+                };
+            }
+            return {
+                key: "MEMBER",
+                label: "Thành Viên",
+                icon: "fa-seedling",
+                badgeClass: "bg-emerald-100 text-emerald-800 border-emerald-200",
+                solidClass: "bg-emerald-600 text-white",
+                canModerate: false,
+                canManageRoles: false,
+                permissionsDesc: "Quyền Thành Viên: Đăng bài (+15đ), bình luận (+5đ), nhận thích (+10đ). Đạt 100 điểm sẽ tự động thăng cấp Học Bá!"
+            };
+        }
+
+        function getInitials(name = "") {
+            const parts = name.trim().split(/\s+/);
+            if (parts.length === 0) return "HS";
+            if (parts.length === 1) return parts[0].substring(0, 2).toUpperCase();
+            return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+        }
+
+        function formatRelativeTime(timestamp) {
+            const diffSeconds = Math.max(1, Math.floor((Date.now() - timestamp) / 1000));
+            if (diffSeconds < 60) return "Vừa xong";
+            const diffMinutes = Math.floor(diffSeconds / 60);
+            if (diffMinutes < 60) return `${diffMinutes} phút trước`;
+            const diffHours = Math.floor(diffMinutes / 60);
+            if (diffHours < 24) return `${diffHours} giờ trước`;
+            const diffDays = Math.floor(diffHours / 24);
+            return `${diffDays} ngày trước`;
+        }
+
+        function escapeHtml(str = "") {
+            return String(str)
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/"/g, "&quot;")
+                .replace(/'/g, "&#039;");
+        }
+
+        // ============================================================================
+        // 3. FIREBASE FIRESTORE PERSISTENCE (WITH RULES 1, 2, 3)
+        // ============================================================================
+        async function initCloudStorage() {
+            try {
+                if (typeof __firebase_config === 'undefined' || !__firebase_config) {
+                    updateSyncStatusUI(false);
+                    return;
+                }
+                const firebaseConfig = JSON.parse(__firebase_config);
+                const app = initializeApp(firebaseConfig);
+                state.db = getFirestore(app);
+                state.auth = getAuth(app);
+
+                // RULE 3: Auth Before Queries
+                if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+                    await signInWithCustomToken(state.auth, __initial_auth_token);
+                } else {
+                    await signInAnonymously(state.auth);
+                }
+
+                onAuthStateChanged(state.auth, (user) => {
+                    state.user = user;
+                    if (user) {
+                        setupRealtimeListeners();
+                    }
+                });
+            } catch (err) {
+                console.warn("Chế độ bộ nhớ phiên làm việc:", err);
+                updateSyncStatusUI(false);
+            }
+        }
+
+        function setupRealtimeListeners() {
+            if (!state.user || !state.db) return;
+
+            // RULE 1: Strict public paths
+            const studentsCol = collection(state.db, 'artifacts', state.appId, 'public', 'data', 'students');
+            const postsCol = collection(state.db, 'artifacts', state.appId, 'public', 'data', 'posts');
+
+            // RULE 2: Simple collection queries without orderBy/where/limit
+            onSnapshot(studentsCol, async (snapshot) => {
+                if (snapshot.empty) {
+                    // Seed initial students to Firestore
+                    for (const st of INITIAL_STUDENTS) {
+                        await saveStudentToCloud(st);
+                    }
+                } else {
+                    const loadedStudents = [];
+                    snapshot.forEach(docSnap => loadedStudents.push(docSnap.data()));
+                    state.students = loadedStudents;
+                    if (!state.students.some(s => s.id === state.currentUserId) && state.students.length > 0) {
+                        state.currentUserId = state.students[0].id;
+                    }
+                    refreshAllViews();
+                }
+                updateSyncStatusUI(true);
+            }, (error) => {
+                console.error("Lỗi đồng bộ hồ sơ học sinh:", error);
+                updateSyncStatusUI(false);
+            });
+
+            onSnapshot(postsCol, async (snapshot) => {
+                if (snapshot.empty) {
+                    for (const post of INITIAL_POSTS) {
+                        await savePostToCloud(post);
+                    }
+                } else {
+                    const loadedPosts = [];
+                    snapshot.forEach(docSnap => {
+                        const data = docSnap.data();
+                        loadedPosts.push({
+                            ...data,
+                            likes: Array.isArray(data.likes) ? data.likes : [],
+                            comments: Array.isArray(data.comments) ? data.comments : []
+                        });
+                    });
+                    state.posts = loadedPosts;
+                    refreshAllViews();
+                }
+            }, (error) => {
+                console.error("Lỗi đồng bộ bài viết:", error);
+            });
+        }
+
+        async function saveStudentToCloud(student) {
+            if (!state.user || !state.db) return;
+            try {
+                const ref = doc(state.db, 'artifacts', state.appId, 'public', 'data', 'students', student.id);
+                await setDoc(ref, student);
+            } catch (e) {
+                console.error("Lỗi lưu học sinh:", e);
+            }
+        }
+
+        async function deleteStudentFromCloud(studentId) {
+            if (!state.user || !state.db) return;
+            try {
+                const ref = doc(state.db, 'artifacts', state.appId, 'public', 'data', 'students', studentId);
+                await deleteDoc(ref);
+            } catch (e) {
+                console.error("Lỗi xóa học sinh:", e);
+            }
+        }
+
+        async function savePostToCloud(post) {
+            if (!state.user || !state.db) return;
+            try {
+                const ref = doc(state.db, 'artifacts', state.appId, 'public', 'data', 'posts', post.id);
+                await setDoc(ref, post);
+            } catch (e) {
+                console.error("Lỗi lưu bài viết:", e);
+            }
+        }
+
+        async function deletePostFromCloud(postId) {
+            if (!state.user || !state.db) return;
+            try {
+                const ref = doc(state.db, 'artifacts', state.appId, 'public', 'data', 'posts', postId);
+                await deleteDoc(ref);
+            } catch (e) {
+                console.error("Lỗi xóa bài viết:", e);
+            }
+        }
+
+        function updateSyncStatusUI(connected) {
+            state.isCloudConnected = connected;
+            const badge = document.getElementById("syncStatusBadge");
+            if (!badge) return;
+            if (connected) {
+                badge.className = "inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-medium bg-emerald-50 text-emerald-700 border border-emerald-200";
+                badge.innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span> Đã đồng bộ đám mây`;
+            } else {
+                badge.className = "inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-medium bg-indigo-50 text-indigo-700 border border-indigo-200";
+                badge.innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-indigo-500"></span> Lưu trữ trực tiếp`;
+            }
+        }
+
+        // ============================================================================
+        // 4. UI RENDERING FUNCTIONS
+        // ============================================================================
+        function getCurrentStudent() {
+            return state.students.find(s => s.id === state.currentUserId) || state.students[0];
+        }
+
+        function refreshAllViews() {
+            renderHeaderUserSwitcher();
+            renderActiveUserSidebar();
+            renderSidebarLeaderboard();
+            renderForumCategories();
+            renderForum();
+            renderDirectory();
+            renderHierarchyView();
+            // Update counters
+            document.getElementById("navPostCount").textContent = state.posts.length;
+            document.getElementById("navStudentCount").textContent = state.students.length;
+        }
+
+        function renderHeaderUserSwitcher() {
+            const select = document.getElementById("currentUserSelect");
+            if (!select) return;
+            const sortedStudents = [...state.students].sort((a, b) => (b.points || 0) - (a.points || 0));
+            select.innerHTML = sortedStudents.map(st => {
+                const rank = getHierarchyInfo(st);
+                const selected = st.id === state.currentUserId ? "selected" : "";
+                return `<option value="${st.id}" ${selected}>[${rank.label}] ${escapeHtml(st.name)} (${escapeHtml(st.className)} - ${st.points}đ)</option>`;
+            }).join("");
+        }
+
+        function renderActiveUserSidebar() {
+            const current = getCurrentStudent();
+            if (!current) return;
+            const rank = getHierarchyInfo(current);
+            const initials = getInitials(current.name);
+
+            const avatarEl = document.getElementById("activeUserAvatar");
+            avatarEl.className = `w-16 h-16 rounded-2xl ${current.avatarColor || 'bg-indigo-600'} text-white font-bold text-xl flex items-center justify-center ring-4 ring-white shadow-md`;
+            avatarEl.textContent = initials;
+
+            const composerAvatar = document.getElementById("composerUserAvatar");
+            if (composerAvatar) {
+                composerAvatar.className = `w-10 h-10 rounded-xl ${current.avatarColor || 'bg-indigo-600'} text-white font-bold flex items-center justify-center shrink-0`;
+                composerAvatar.textContent = initials;
+            }
+
+            document.getElementById("activeUserRankBadge").innerHTML = `
+                <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold border ${rank.badgeClass} shadow-xs">
+                    <i class="fa-solid ${rank.icon}"></i>
+                    ${rank.label}
+                </span>
+            `;
+
+            document.getElementById("activeUserName").textContent = current.name;
+            document.getElementById("activeUserCode").textContent = current.code;
+            document.getElementById("activeUserClass").textContent = current.className;
+            document.getElementById("activeUserPoints").textContent = `${current.points || 0} điểm`;
+
+            const pct = Math.min(100, Math.round(((current.points || 0) / 100) * 100));
+            document.getElementById("activeUserProgressBar").style.width = `${pct}%`;
+
+            const hintEl = document.getElementById("activeUserNextRankHint");
+            if (current.role === "ADMIN" || current.role === "MOD") {
+                hintEl.innerHTML = `<i class="fa-solid fa-circle-check text-indigo-600"></i> Chức vụ quản lý diễn đàn (${rank.label})`;
+            } else if ((current.points || 0) >= 100) {
+                hintEl.innerHTML = `<i class="fa-solid fa-crown text-amber-500"></i> Đã đạt cấp <strong>Học Bá</strong> (≥ 100 điểm)`;
+            } else {
+                const needed = 100 - (current.points || 0);
+                hintEl.innerHTML = `Cần thêm <strong>${needed} điểm</strong> để thăng cấp <strong>Học Bá</strong>!`;
+            }
+
+            const subjectsContainer = document.getElementById("activeUserSubjects");
+            const subjects = Array.isArray(current.subjects) && current.subjects.length > 0 ? current.subjects : ["Chưa cập nhật"];
+            subjectsContainer.innerHTML = subjects.map(sub => `
+                <span class="px-2 py-0.5 rounded-md bg-slate-100 text-slate-700 font-medium border border-slate-200/80">${escapeHtml(sub)}</span>
+            `).join("");
+
+            document.getElementById("activeUserPermissionsText").textContent = rank.permissionsDesc;
+        }
+
+        function renderSidebarLeaderboard() {
+            const container = document.getElementById("sidebarLeaderboard");
+            if (!container) return;
+            const topStudents = [...state.students]
+                .sort((a, b) => (b.points || 0) - (a.points || 0))
+                .slice(0, 5);
+
+            container.innerHTML = topStudents.map((st, idx) => {
+                const rank = getHierarchyInfo(st);
+                const medalColors = [
+                    "bg-amber-400 text-slate-950",
+                    "bg-slate-300 text-slate-800",
+                    "bg-amber-700 text-white"
+                ];
+                const medalBadge = idx < 3
+                    ? `<span class="w-5 h-5 rounded-full ${medalColors[idx]} font-extrabold text-[11px] flex items-center justify-center shrink-0">${idx + 1}</span>`
+                    : `<span class="w-5 h-5 rounded-full bg-slate-100 text-slate-500 font-bold text-[11px] flex items-center justify-center shrink-0">${idx + 1}</span>`;
+
+                return `
+                    <div class="flex items-center justify-between gap-2 p-2 rounded-xl hover:bg-slate-50 transition">
+                        <div class="flex items-center gap-2.5 min-w-0">
+                            ${medalBadge}
+                            <div class="w-8 h-8 rounded-lg ${st.avatarColor || 'bg-indigo-600'} text-white font-bold text-xs flex items-center justify-center shrink-0">
+                                ${getInitials(st.name)}
+                            </div>
+                            <div class="min-w-0">
+                                <div class="text-xs font-bold text-slate-800 truncate">${escapeHtml(st.name)}</div>
+                                <div class="flex items-center gap-1.5 text-[10px] text-slate-500">
+                                    <span>${escapeHtml(st.className)}</span>
+                                    <span>•</span>
+                                    <span class="font-semibold text-indigo-600">${rank.label}</span>
+                                </div>
+                            </div>
+                        </div>
+                        <span class="text-xs font-extrabold text-amber-600 bg-amber-50 px-2 py-0.5 rounded-lg border border-amber-200/60 shrink-0">
+                            ${st.points || 0}đ
+                        </span>
+                    </div>
+                `;
+            }).join("");
+        }
+
+        function renderForumCategories() {
+            const container = document.getElementById("forumCategoryPills");
+            if (!container) return;
+            container.innerHTML = CATEGORIES.map(cat => {
+                const active = state.selectedCategory === cat;
+                const btnClass = active
+                    ? "bg-indigo-600 text-white shadow-xs"
+                    : "bg-slate-100 text-slate-600 hover:bg-slate-200/70";
+                return `
+                    <button onclick="window.app.setCategory('${cat}')" class="px-3 py-1.5 rounded-xl text-xs font-semibold whitespace-nowrap transition ${btnClass}">
+                        ${escapeHtml(cat)}
+                    </button>
+                `;
+            }).join("");
+        }
+
+        function renderForum() {
+            const container = document.getElementById("forumPostsContainer");
+            if (!container) return;
+
+            const currentStudent = getCurrentStudent();
+            const currentRank = getHierarchyInfo(currentStudent);
+            const searchQuery = (document.getElementById("forumSearchInput")?.value || "").trim().toLowerCase();
+
+            // Filter posts in memory (Rule 2)
+            const filteredPosts = state.posts
+                .filter(post => {
+                    if (state.selectedCategory !== "Tất cả" && post.category !== state.selectedCategory) {
+                        return false;
+                    }
+                    if (searchQuery) {
+                        const author = state.students.find(s => s.id === post.authorId);
+                        const haystack = `${post.title} ${post.content} ${post.tag || ''} ${author?.name || ''} ${author?.className || ''}`.toLowerCase();
+                        return haystack.includes(searchQuery);
+                    }
+                    return true;
+                })
+                .sort((a, b) => {
+                    if (Boolean(a.isPinned) !== Boolean(b.isPinned)) {
+                        return a.isPinned ? -1 : 1;
+                    }
+                    return (b.createdAt || 0) - (a.createdAt || 0);
+                });
+
+            if (filteredPosts.length === 0) {
+                container.innerHTML = `
+                    <div class="bg-white rounded-2xl border border-slate-200 p-10 text-center">
+                        <div class="w-12 h-12 rounded-2xl bg-slate-100 text-slate-400 flex items-center justify-center mx-auto mb-3 text-xl">
+                            <i class="fa-regular fa-Folder-open"></i>
+                        </div>
+                        <h3 class="text-sm font-bold text-slate-800">Không tìm thấy bài viết nào</h3>
+                        <p class="text-xs text-slate-500 mt-1">Hãy thử đổi chuyên mục hoặc đăng bài thảo luận đầu tiên!</p>
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = filteredPosts.map(post => {
+                const author = state.students.find(s => s.id === post.authorId) || {
+                    name: "Học sinh ẩn danh",
+                    code: "HS000",
+                    className: "N/A",
+                    role: "STUDENT",
+                    points: 0,
+                    avatarColor: "bg-slate-500"
+                };
+                const authorRank = getHierarchyInfo(author);
+                const likes = Array.isArray(post.likes) ? post.likes : [];
+                const comments = Array.isArray(post.comments) ? post.comments : [];
+                const isLiked = likes.includes(state.currentUserId);
+                const isCommentsOpen = state.openCommentPostIds.has(post.id);
+                const canDeletePost = currentRank.canModerate || post.authorId === state.currentUserId;
+
+                return `
+                    <article class="bg-white rounded-2xl border ${post.isPinned ? 'border-amber-300 ring-1 ring-amber-200/70' : 'border-slate-200'} shadow-sm overflow-hidden transition hover:border-slate-300">
+                        ${post.isPinned ? `
+                            <div class="bg-gradient-to-r from-amber-50 via-amber-100/60 to-transparent px-5 py-1.5 border-b border-amber-200/80 flex items-center justify-between text-[11px] font-bold text-amber-800">
+                                <span class="flex items-center gap-1.5">
+                                    <i class="fa-solid fa-thumbtack text-amber-600 rotate-45"></i>
+                                    BÀI VIẾT ĐƯỢC GHIM BỞI BAN QUẢN TRỊ / CÁN BỘ LỚP
+                                </span>
+                                <span>Ưu tiên hiển thị</span>
+                            </div>
+                        ` : ''}
+
+                        <div class="p-5">
+                            <!-- Post Author Header -->
+                            <div class="flex items-start justify-between gap-3">
+                                <div class="flex items-center gap-3">
+                                    <div class="w-11 h-11 rounded-xl ${author.avatarColor || 'bg-indigo-600'} text-white font-bold text-sm flex items-center justify-center shrink-0 shadow-xs">
+                                        ${getInitials(author.name)}
+                                    </div>
+                                    <div>
+                                        <div class="flex flex-wrap items-center gap-2">
+                                            <span class="font-bold text-sm text-slate-900">${escapeHtml(author.name)}</span>
+                                            <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-bold border ${authorRank.badgeClass}">
+                                                <i class="fa-solid ${authorRank.icon}"></i>
+                                                ${authorRank.label}
+                                            </span>
+                                            <span class="text-xs font-semibold text-slate-500 bg-slate-100 px-2 py-0.5 rounded-md">
+                                                Lớp ${escapeHtml(author.className)}
+                                            </span>
+                                        </div>
+                                        <div class="flex items-center gap-2 text-[11px] text-slate-400 mt-0.5">
+                                            <span>Mã HS: ${escapeHtml(author.code)}</span>
+                                            <span>•</span>
+                                            <span>${formatRelativeTime(post.createdAt)}</span>
+                                            <span>•</span>
+                                            <span class="text-indigo-600 font-semibold">${escapeHtml(post.category)}</span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Moderator / Author Action Buttons -->
+                                <div class="flex items-center gap-1">
+                                    ${currentRank.canModerate ? `
+                                        <button onclick="window.app.togglePinPost('${post.id}')" title="${post.isPinned ? 'Bỏ ghim bài viết' : 'Ghim bài viết lên đầu'}" class="px-2.5 py-1.5 rounded-lg text-xs font-semibold ${post.isPinned ? 'bg-amber-100 text-amber-800' : 'bg-slate-100 text-slate-600 hover:bg-amber-50 hover:text-amber-700'} transition flex items-center gap-1">
+                                            <i class="fa-solid fa-thumbtack"></i>
+                                            <span class="hidden sm:inline">${post.isPinned ? 'Bỏ ghim' : 'Ghim'}</span>
+                                        </button>
+                                    ` : ''}
+                                    ${canDeletePost ? `
+                                        <button onclick="window.app.confirmDeletePost('${post.id}')" title="Xóa bài viết" class="p-1.5 rounded-lg text-xs text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition">
+                                            <i class="fa-solid fa-trash-can"></i>
+                                        </button>
+                                    ` : ''}
+                                </div>
+                            </div>
+
+                            <!-- Post Title & Content -->
+                            <div class="mt-3.5">
+                                <div class="flex flex-wrap items-center gap-2 mb-1.5">
+                                    ${post.tag ? `
+                                        <span class="px-2.5 py-0.5 rounded-lg bg-indigo-50 text-indigo-700 font-semibold text-xs border border-indigo-100">
+                                            #${escapeHtml(post.tag)}
+                                        </span>
+                                    ` : ''}
+                                </div>
+                                <h3 class="text-base font-bold text-slate-900 leading-snug">${escapeHtml(post.title)}</h3>
+                                <p class="text-xs sm:text-sm text-slate-700 mt-2 whitespace-pre-line leading-relaxed">${escapeHtml(post.content)}</p>
+                            </div>
+
+                            <!-- Post Footer Actions -->
+                            <div class="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between gap-2">
+                                <div class="flex items-center gap-2">
+                                    <button onclick="window.app.toggleLikePost('${post.id}')" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold transition ${isLiked ? 'bg-rose-50 text-rose-600 border border-rose-200' : 'bg-slate-100 text-slate-600 hover:bg-slate-200/70'}">
+                                        <i class="${isLiked ? 'fa-solid' : 'fa-regular'} fa-heart"></i>
+                                        <span>Hữu ích (${likes.length})</span>
+                                    </button>
+                                    <button onclick="window.app.toggleCommentSection('${post.id}')" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold bg-slate-100 text-slate-600 hover:bg-slate-200/70 transition">
+                                        <i class="fa-regular fa-comment-dots"></i>
+                                        <span>Bình luận (${comments.length})</span>
+                                    </button>
+                                </div>
+
+                                <span class="text-[11px] text-slate-400 hidden sm:inline">
+                                    Tác giả nhận +10 điểm cho mỗi lượt thích
+                                </span>
+                            </div>
+                        </div>
+
+                        <!-- Expandable Comments Section -->
+                        <div id="commentsBox_${post.id}" class="${isCommentsOpen ? 'block' : 'hidden'} bg-slate-50/90 border-t border-slate-200/80 px-5 py-4 space-y-3">
+                            <div class="space-y-2.5">
+                                ${comments.length === 0 ? `
+                                    <p class="text-xs text-slate-400 italic">Chưa có bình luận nào. Hãy là người đầu tiên giải đáp (+5 điểm)!</p>
+                                ` : comments.map(cmt => {
+                                    const cmtAuthor = state.students.find(s => s.id === cmt.authorId) || {
+                                        name: "Học sinh",
+                                        className: "N/A",
+                                        role: "STUDENT",
+                                        points: 0,
+                                        avatarColor: "bg-slate-500"
+                                    };
+                                    const cmtRank = getHierarchyInfo(cmtAuthor);
+                                    const canDeleteCmt = currentRank.canModerate || cmt.authorId === state.currentUserId;
+                                    return `
+                                        <div class="flex items-start gap-2.5 bg-white p-3 rounded-xl border border-slate-200/80 shadow-2xs">
+                                            <div class="w-8 h-8 rounded-lg ${cmtAuthor.avatarColor || 'bg-indigo-600'} text-white font-bold text-xs flex items-center justify-center shrink-0 mt-0.5">
+                                                ${getInitials(cmtAuthor.name)}
+                                            </div>
+                                            <div class="flex-1 min-w-0">
+                                                <div class="flex flex-wrap items-center justify-between gap-1">
+                                                    <div class="flex flex-wrap items-center gap-1.5">
+                                                        <span class="text-xs font-bold text-slate-900">${escapeHtml(cmtAuthor.name)}</span>
+                                                        <span class="text-[10px] font-semibold px-1.5 py-0.2 rounded bg-slate-100 text-slate-600">${escapeHtml(cmtAuthor.className)}</span>
+                                                        <span class="inline-flex items-center gap-1 px-1.5 py-0.2 rounded-full text-[10px] font-bold border ${cmtRank.badgeClass}">
+                                                            <i class="fa-solid ${cmtRank.icon}"></i> ${cmtRank.label}
+                                                        </span>
+                                                    </div>
+                                                    <div class="flex items-center gap-2">
+                                                        <span class="text-[10px] text-slate-400">${formatRelativeTime(cmt.createdAt)}</span>
+                                                        ${canDeleteCmt ? `
+                                                            <button onclick="window.app.deleteComment('${post.id}', '${cmt.id}')" title="Xóa bình luận" class="text-slate-400 hover:text-rose-600 text-[11px]">
+                                                                <i class="fa-solid fa-xmark"></i>
+                                                            </button>
+                                                        ` : ''}
+                                                    </div>
+                                                </div>
+                                                <p class="text-xs text-slate-700 mt-1 leading-relaxed">${escapeHtml(cmt.content)}</p>
+                                            </div>
+                                        </div>
+                                    `;
+                                }).join("")}
+                            </div>
+
+                            <!-- Add Comment Input -->
+                            <form onsubmit="window.app.submitComment(event, '${post.id}')" class="flex items-center gap-2 pt-1">
+                                <input id="commentInput_${post.id}" type="text" required placeholder="Viết câu trả lời hoặc thảo luận của bạn (+5 điểm)..." class="flex-1 px-3.5 py-2 rounded-xl bg-white border border-slate-300 text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                                <button type="submit" class="px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-xs shrink-0 transition">
+                                    Gửi (+5đ)
+                                </button>
+                            </form>
+                        </div>
+                    </article>
+                `;
+            }).join("");
+        }
+
+        // ============================================================================
+        // 5. STUDENT DIRECTORY VIEW & CRUD
+        // ============================================================================
+        function renderDirectory() {
+            const tbody = document.getElementById("studentDirectoryTableBody");
+            if (!tbody) return;
+
+            // Update Summary Statistics
+            const total = state.students.length;
+            const staffCount = state.students.filter(s => s.role === "ADMIN" || s.role === "MOD").length;
+            const scholarCount = state.students.filter(s => getHierarchyInfo(s).key === "SCHOLAR").length;
+            const avgPoints = total > 0
+                ? Math.round(state.students.reduce((acc, s) => acc + (Number(s.points) || 0), 0) / total)
+                : 0;
+
+            document.getElementById("statTotalStudents").textContent = total;
+            document.getElementById("statTotalStaff").textContent = staffCount;
+            document.getElementById("statTotalScholars").textContent = scholarCount;
+            document.getElementById("statAvgPoints").textContent = avgPoints;
+
+            const search = (document.getElementById("studentSearchInput")?.value || "").trim().toLowerCase();
+            const gradeFilter = document.getElementById("studentGradeFilter")?.value || "ALL";
+            const rankFilter = document.getElementById("studentRankFilter")?.value || "ALL";
+
+            const currentStudent = getCurrentStudent();
+            const currentRank = getHierarchyInfo(currentStudent);
+
+            const filtered = state.students
+                .filter(st => {
+                    const rank = getHierarchyInfo(st);
+                    if (rankFilter !== "ALL" && rank.key !== rankFilter) return false;
+                    if (gradeFilter !== "ALL" && !String(st.className).startsWith(gradeFilter)) return false;
+                    if (search) {
+                        const subjectsText = Array.isArray(st.subjects) ? st.subjects.join(" ") : "";
+                        const hay = `${st.code} ${st.name} ${st.className} ${subjectsText} ${st.bio || ""}`.toLowerCase();
+                        return hay.includes(search);
+                    }
+                    return true;
+                })
+                .sort((a, b) => (b.points || 0) - (a.points || 0));
+
+            if (filtered.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="6" class="py-8 text-center text-slate-400 text-xs sm:text-sm">
+                            Không tìm thấy hồ sơ học sinh nào khớp với bộ lọc.
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+
+            tbody.innerHTML = filtered.map(st => {
+                const rank = getHierarchyInfo(st);
+                const isMe = st.id === state.currentUserId;
+                const canEdit = currentRank.canManageRoles || currentRank.canModerate || isMe;
+                const canDelete = currentRank.canManageRoles && !isMe;
+                const subjects = Array.isArray(st.subjects) ? st.subjects : [];
+
+                return `
+                    <tr class="hover:bg-slate-50/90 transition ${isMe ? 'bg-indigo-50/30' : ''}">
+                        <td class="py-3.5 px-4">
+                            <div class="flex items-center gap-3">
+                                <div class="w-9 h-9 rounded-xl ${st.avatarColor || 'bg-indigo-600'} text-white font-bold text-xs flex items-center justify-center shrink-0">
+                                    ${getInitials(st.name)}
+                                </div>
+                                <div>
+                                    <div class="font-bold text-slate-900 flex items-center gap-1.5">
+                                        <span>${escapeHtml(st.name)}</span>
+                                        ${isMe ? `<span class="text-[10px] px-1.5 py-0.2 rounded bg-indigo-100 text-indigo-700 font-bold">Bạn</span>` : ''}
+                                    </div>
+                                    <div class="text-[11px] text-slate-500 font-medium">Mã HS: <span class="text-slate-700 font-semibold">${escapeHtml(st.code)}</span></div>
+                                    ${st.bio ? `<div class="text-[11px] text-slate-400 line-clamp-1 mt-0.5">${escapeHtml(st.bio)}</div>` : ''}
+                                </div>
+                            </div>
+                        </td>
+                        <td class="py-3.5 px-3">
+                            <span class="px-2.5 py-1 rounded-lg bg-slate-100 text-slate-800 font-bold text-xs border border-slate-200">
+                                ${escapeHtml(st.className)}
+                            </span>
+                        </td>
+                        <td class="py-3.5 px-3">
+                            <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold border ${rank.badgeClass}">
+                                <i class="fa-solid ${rank.icon}"></i>
+                                ${rank.label}
+                            </span>
+                        </td>
+                        <td class="py-3.5 px-3">
+                            <div class="font-extrabold text-indigo-600 text-sm">${st.points || 0} điểm</div>
+                            <div class="w-24 h-1.5 bg-slate-200 rounded-full overflow-hidden mt-1">
+                                <div class="h-full bg-indigo-500 rounded-full" style="width: ${Math.min(100, st.points || 0)}%"></div>
+                            </div>
+                        </td>
+                        <td class="py-3.5 px-3">
+                            <div class="flex flex-wrap gap-1 max-w-xs">
+                                ${subjects.map(sub => `
+                                    <span class="px-2 py-0.5 rounded-md bg-slate-100 text-slate-700 text-[11px] font-medium">${escapeHtml(sub)}</span>
+                                `).join("")}
+                            </div>
+                        </td>
+                        <td class="py-3.5 px-4 text-right whitespace-nowrap">
+                            <div class="inline-flex items-center gap-1">
+                                <button onclick="window.app.changeCurrentUser('${st.id}')" title="Sử dụng tài khoản này" class="px-2.5 py-1.5 rounded-lg text-xs font-semibold ${isMe ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-100 hover:bg-indigo-50 text-slate-600 hover:text-indigo-600'} transition">
+                                    <i class="fa-solid fa-user-check"></i>
+                                    <span class="hidden xl:inline">${isMe ? 'Đang dùng' : 'Chọn dùng'}</span>
+                                </button>
+                                ${canEdit ? `
+                                    <button onclick="window.app.openStudentModal('${st.id}')" title="Sửa hồ sơ học sinh" class="p-1.5 rounded-lg text-slate-500 hover:text-indigo-600 hover:bg-indigo-50 transition">
+                                        <i class="fa-solid fa-pen-to-square"></i>
+                                    </button>
+                                ` : ''}
+                                ${canDelete ? `
+                                    <button onclick="window.app.confirmDeleteStudent('${st.id}')" title="Xóa hồ sơ" class="p-1.5 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition">
+                                        <i class="fa-solid fa-trash-can"></i>
+                                    </button>
+                                ` : ''}
+                            </div>
+                        </td>
+                    </tr>
+                `;
+            }).join("");
+        }
+
+        function renderHierarchyView() {
+            const container = document.getElementById("hierarchyGroupsContainer");
+            if (!container) return;
+
+            const groups = [
+                { key: "ADMIN", title: "Ban Quản Trị (Admin & Giáo Viên)", icon: "fa-shield-halved", headerBg: "bg-rose-600" },
+                { key: "MOD", title: "Cán Bộ Lớp (Lớp Trưởng & Bí Thư)", icon: "fa-star", headerBg: "bg-purple-600" },
+                { key: "SCHOLAR", title: "Học Bá (Điểm tích lũy ≥ 100)", icon: "fa-crown", headerBg: "bg-amber-500" },
+                { key: "MEMBER", title: "Thành Viên (< 100 điểm)", icon: "fa-seedling", headerBg: "bg-emerald-600" }
+            ];
+
+            container.innerHTML = groups.map(grp => {
+                const members = state.students
+                    .filter(s => getHierarchyInfo(s).key === grp.key)
+                    .sort((a, b) => (b.points || 0) - (a.points || 0));
+
+                return `
+                    <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+                        <div class="${grp.headerBg} px-4 py-3 text-white flex items-center justify-between">
+                            <span class="font-bold text-xs sm:text-sm flex items-center gap-2">
+                                <i class="fa-solid ${grp.icon}"></i>
+                                ${grp.title}
+                            </span>
+                            <span class="px-2 py-0.5 rounded-full bg-white/20 text-xs font-extrabold">${members.length} HS</span>
+                        </div>
+                        <div class="p-4 divide-y divide-slate-100">
+                            ${members.length === 0 ? `
+                                <p class="text-xs text-slate-400 italic py-2">Chưa có học sinh nào ở cấp bậc này.</p>
+                            ` : members.map(st => `
+                                <div class="py-2.5 first:pt-0 last:pb-0 flex items-center justify-between gap-2">
+                                    <div class="flex items-center gap-2.5">
+                                        <div class="w-8 h-8 rounded-lg ${st.avatarColor || 'bg-indigo-600'} text-white font-bold text-xs flex items-center justify-center">
+                                            ${getInitials(st.name)}
+                                        </div>
+                                        <div>
+                                            <div class="text-xs sm:text-sm font-bold text-slate-900">${escapeHtml(st.name)}</div>
+                                            <div class="text-[11px] text-slate-500">Mã HS: ${escapeHtml(st.code)} • Lớp ${escapeHtml(st.className)}</div>
+                                        </div>
+                                    </div>
+                                    <div class="text-right">
+                                        <span class="text-xs font-extrabold text-indigo-600 bg-indigo-50 px-2.5 py-1 rounded-lg">${st.points || 0} điểm</span>
+                                    </div>
+                                </div>
+                            `).join("")}
+                        </div>
+                    </div>
+                `;
+            }).join("");
+        }
+
+        // ============================================================================
+        // 6. USER INTERACTIONS & CONTROLLERS
+        // ============================================================================
+        function showToast(message, type = "success") {
+            const container = document.getElementById("toastContainer");
+            if (!container) return;
+            const colors = {
+                success: "bg-slate-900 text-white border-slate-700",
+                rankup: "bg-gradient-to-r from-amber-500 to-orange-500 text-white border-amber-300",
+                warning: "bg-rose-600 text-white border-rose-400"
+            };
+            const toast = document.createElement("div");
+            toast.className = `pointer-events-auto flex items-center gap-2.5 px-4 py-3 rounded-2xl shadow-lg border text-xs sm:text-sm font-semibold fade-in ${colors[type] || colors.success}`;
+            toast.innerHTML = `
+                <i class="fa-solid ${type === 'rankup' ? 'fa-crown text-lg' : type === 'warning' ? 'fa-circle-exclamation' : 'fa-circle-check text-emerald-400'}"></i>
+                <span>${escapeHtml(message)}</span>
+            `;
+            container.appendChild(toast);
+            setTimeout(() => {
+                toast.style.opacity = "0";
+                toast.style.transition = "opacity 0.25s ease";
+                setTimeout(() => toast.remove(), 260);
+            }, 3200);
+        }
+
+        async function awardPointsToStudent(studentId, deltaPoints, reasonText) {
+            const idx = state.students.findIndex(s => s.id === studentId);
+            if (idx === -1) return;
+            const st = state.students[idx];
+            const oldRank = getHierarchyInfo(st).key;
+            const newPoints = Math.max(0, (Number(st.points) || 0) + deltaPoints);
+            const updatedStudent = { ...st, points: newPoints };
+            state.students[idx] = updatedStudent;
+            const newRank = getHierarchyInfo(updatedStudent).key;
+
+            await saveStudentToCloud(updatedStudent);
+            refreshAllViews();
+
+            if (oldRank === "MEMBER" && newRank === "SCHOLAR") {
+                showToast(`🎉 Chúc mừng ${st.name} đã đạt ${newPoints} điểm và thăng cấp lên HỌC BÁ!`, "rankup");
+            } else if (deltaPoints > 0 && reasonText) {
+                showToast(`${reasonText} (+${deltaPoints} điểm cho ${st.name})`);
+            }
+        }
+
+        // Expose functions to global window.app for HTML event handlers
+        window.app = {
+            switchMainTab(tabName) {
+                state.activeMainTab = tabName;
+                const views = {
+                    forum: document.getElementById("viewForum"),
+                    directory: document.getElementById("viewDirectory"),
+                    hierarchy: document.getElementById("viewHierarchy")
+                };
+                const buttons = {
+                    forum: document.getElementById("tabBtnForum"),
+                    directory: document.getElementById("tabBtnDirectory"),
+                    hierarchy: document.getElementById("tabBtnHierarchy")
+                };
+
+                Object.keys(views).forEach(k => {
+                    if (k === tabName) {
+                        views[k].classList.remove("hidden");
+                        buttons[k].className = "flex-1 lg:flex-initial flex items-center justify-center gap-2 px-4 py-2 rounded-lg text-xs sm:text-sm font-semibold transition-all bg-white text-indigo-600 shadow-sm";
+                    } else {
+                        views[k].classList.add("hidden");
+                        buttons[k].className = "flex-1 lg:flex-initial flex items-center justify-center gap-2 px-4 py-2 rounded-lg text-xs sm:text-sm font-semibold transition-all text-slate-600 hover:text-slate-900";
+                    }
+                });
+                refreshAllViews();
+            },
+
+            changeCurrentUser(studentId) {
+                state.currentUserId = studentId;
+                const st = getCurrentStudent();
+                const rank = getHierarchyInfo(st);
+                refreshAllViews();
+                showToast(`Đang dùng tài khoản: ${st.name} (${rank.label})`);
+            },
+
+            setCategory(category) {
+                state.selectedCategory = category;
+                renderForumCategories();
+                renderForum();
+            },
+
+            renderForum() {
+                renderForum();
+            },
+
+            renderDirectory() {
+                renderDirectory();
+            },
+
+            openNewPostModal() {
+                const current = getCurrentStudent();
+                const rank = getHierarchyInfo(current);
+                document.getElementById("formNewPost").reset();
+                const pinWrapper = document.getElementById("pinPostCheckboxWrapper");
+                if (rank.canModerate) {
+                    pinWrapper.classList.remove("hidden");
+                    pinWrapper.classList.add("flex");
+                } else {
+                    pinWrapper.classList.add("hidden");
+                    pinWrapper.classList.remove("flex");
+                }
+                document.getElementById("modalNewPost").classList.remove("hidden");
+            },
+
+            async submitNewPost(event) {
+                event.preventDefault();
+                const current = getCurrentStudent();
+                const rank = getHierarchyInfo(current);
+                const title = document.getElementById("postTitleInput").value.trim();
+                const category = document.getElementById("postCategoryInput").value;
+                const tag = document.getElementById("postTagInput").value.trim();
+                const content = document.getElementById("postContentInput").value.trim();
+                const isPinned = rank.canModerate && document.getElementById("postPinInput").checked;
+
+                if (!title || !content) return;
+
+                const newPost = {
+                    id: "post_" + Date.now(),
+                    authorId: current.id,
+                    title,
+                    category,
+                    tag: tag || category,
+                    content,
+                    isPinned,
+                    likes: [],
+                    comments: [],
+                    createdAt: Date.now()
+                };
+
+                state.posts.unshift(newPost);
+                state.openCommentPostIds.add(newPost.id);
+                this.closeModal("modalNewPost");
+
+                await savePostToCloud(newPost);
+                await awardPointsToStudent(current.id, 15, "Đăng bài viết mới thành công");
+            },
+
+            async toggleLikePost(postId) {
+                const postIdx = state.posts.findIndex(p => p.id === postId);
+                if (postIdx === -1) return;
+                const post = state.posts[postIdx];
+                const likes = Array.isArray(post.likes) ? [...post.likes] : [];
+                const myIdx = likes.indexOf(state.currentUserId);
+
+                let delta = 0;
+                if (myIdx === -1) {
+                    likes.push(state.currentUserId);
+                    delta = 10;
+                } else {
+                    likes.splice(myIdx, 1);
+                    delta = -10;
+                }
+
+                const updatedPost = { ...post, likes };
+                state.posts[postIdx] = updatedPost;
+                await savePostToCloud(updatedPost);
+
+                if (post.authorId !== state.currentUserId) {
+                    await awardPointsToStudent(post.authorId, delta, delta > 0 ? "Bài viết nhận được lượt yêu thích" : "");
+                } else {
+                    refreshAllViews();
+                }
+            },
+
+            toggleCommentSection(postId) {
+                if (state.openCommentPostIds.has(postId)) {
+                    state.openCommentPostIds.delete(postId);
+                } else {
+                    state.openCommentPostIds.add(postId);
+                }
+                renderForum();
+            },
+
+            async submitComment(event, postId) {
+                event.preventDefault();
+                const input = document.getElementById(`commentInput_${postId}`);
+                if (!input) return;
+                const content = input.value.trim();
+                if (!content) return;
+
+                const postIdx = state.posts.findIndex(p => p.id === postId);
+                if (postIdx === -1) return;
+
+                const current = getCurrentStudent();
+                const newComment = {
+                    id: "cmt_" + Date.now(),
+                    authorId: current.id,
+                    content,
+                    createdAt: Date.now()
+                };
+
+                const post = state.posts[postIdx];
+                const updatedComments = [...(post.comments || []), newComment];
+                const updatedPost = { ...post, comments: updatedComments };
+                state.posts[postIdx] = updatedPost;
+                input.value = "";
+
+                await savePostToCloud(updatedPost);
+                await awardPointsToStudent(current.id, 5, "Đã gửi bình luận thảo luận");
+            },
+
+            async deleteComment(postId, commentId) {
+                const postIdx = state.posts.findIndex(p => p.id === postId);
+                if (postIdx === -1) return;
+                const post = state.posts[postIdx];
+                const updatedComments = (post.comments || []).filter(c => c.id !== commentId);
+                const updatedPost = { ...post, comments: updatedComments };
+                state.posts[postIdx] = updatedPost;
+                await savePostToCloud(updatedPost);
+                refreshAllViews();
+                showToast("Đã xóa bình luận", "warning");
+            },
+
+            async togglePinPost(postId) {
+                const currentRank = getHierarchyInfo(getCurrentStudent());
+                if (!currentRank.canModerate) return;
+
+                const postIdx = state.posts.findIndex(p => p.id === postId);
+                if (postIdx === -1) return;
+                const post = state.posts[postIdx];
+                const updatedPost = { ...post, isPinned: !post.isPinned };
+                state.posts[postIdx] = updatedPost;
+                await savePostToCloud(updatedPost);
+                refreshAllViews();
+                showToast(updatedPost.isPinned ? "Đã ghim bài viết lên đầu diễn đàn" : "Đã bỏ ghim bài viết");
+            },
+
+            confirmDeletePost(postId) {
+                document.getElementById("confirmTitle").textContent = "Xóa bài viết trên diễn đàn";
+                document.getElementById("confirmMessage").textContent = "Bạn có chắc chắn muốn xóa bài viết này không? Hành động này không thể hoàn tác.";
+                const btn = document.getElementById("confirmActionBtn");
+                btn.onclick = async () => {
+                    state.posts = state.posts.filter(p => p.id !== postId);
+                    this.closeModal("modalConfirm");
+                    await deletePostFromCloud(postId);
+                    refreshAllViews();
+                    showToast("Đã xóa bài viết khỏi diễn đàn", "warning");
+                };
+                document.getElementById("modalConfirm").classList.remove("hidden");
+            },
+
+            openEditCurrentStudent() {
+                this.openStudentModal(state.currentUserId);
+            },
+
+            openStudentModal(studentId = null) {
+                const form = document.getElementById("formStudent");
+                form.reset();
+                const currentRank = getHierarchyInfo(getCurrentStudent());
+                const roleSelect = document.getElementById("studentRoleInput");
+                const roleHint = document.getElementById("rolePermissionHint");
+
+                // Only ADMIN can promote/change roles to MOD or ADMIN
+                if (currentRank.canManageRoles) {
+                    roleSelect.disabled = false;
+                    roleHint.classList.add("hidden");
+                } else {
+                    roleSelect.disabled = true;
+                    roleHint.classList.remove("hidden");
+                }
+
+                if (studentId) {
+                    const st = state.students.find(s => s.id === studentId);
+                    if (!st) return;
+                    document.getElementById("modalStudentTitle").innerHTML = `<i class="fa-solid fa-user-pen text-indigo-600"></i> Cập Nhật Hồ Sơ Học Sinh`;
+                    document.getElementById("studentIdHidden").value = st.id;
+                    document.getElementById("studentCodeInput").value = st.code;
+                    document.getElementById("studentNameInput").value = st.name;
+                    document.getElementById("studentClassInput").value = st.className;
+                    document.getElementById("studentPointsInput").value = st.points || 0;
+                    document.getElementById("studentRoleInput").value = st.role || "STUDENT";
+                    document.getElementById("studentSubjectsInput").value = Array.isArray(st.subjects) ? st.subjects.join(", ") : "";
+                    document.getElementById("studentBioInput").value = st.bio || "";
+                } else {
+                    document.getElementById("modalStudentTitle").innerHTML = `<i class="fa-solid fa-user-plus text-indigo-600"></i> Thêm Hồ Sơ Học Sinh Mới`;
+                    document.getElementById("studentIdHidden").value = "";
+                    const nextNum = 1000 + state.students.length + 25;
+                    document.getElementById("studentCodeInput").value = `HS${nextNum}`;
+                    document.getElementById("studentPointsInput").value = 30;
+                    document.getElementById("studentRoleInput").value = "STUDENT";
+                }
+
+                document.getElementById("modalStudent").classList.remove("hidden");
+            },
+
+            async submitStudentForm(event) {
+                event.preventDefault();
+                const idHidden = document.getElementById("studentIdHidden").value;
+                const code = document.getElementById("studentCodeInput").value.trim().toUpperCase();
+                const name = document.getElementById("studentNameInput").value.trim();
+                const className = document.getElementById("studentClassInput").value.trim().toUpperCase();
+                const points = Math.max(0, parseInt(document.getElementById("studentPointsInput").value, 10) || 0);
+                const role = document.getElementById("studentRoleInput").value;
+                const subjectsRaw = document.getElementById("studentSubjectsInput").value;
+                const bio = document.getElementById("studentBioInput").value.trim();
+
+                const subjects = subjectsRaw
+                    .split(",")
+                    .map(s => s.trim())
+                    .filter(Boolean);
+
+                const palette = ["bg-indigo-600", "bg-emerald-600", "bg-purple-600", "bg-amber-500", "bg-sky-600", "bg-rose-600"];
+
+                if (idHidden) {
+                    const idx = state.students.findIndex(s => s.id === idHidden);
+                    if (idx !== -1) {
+                        const existing = state.students[idx];
+                        const updated = {
+                            ...existing,
+                            code,
+                            name,
+                            className,
+                            points,
+                            role: getHierarchyInfo(getCurrentStudent()).canManageRoles ? role : existing.role,
+                            subjects: subjects.length > 0 ? subjects : ["Chưa cập nhật"],
+                            bio
+                        };
+                        state.students[idx] = updated;
+                        await saveStudentToCloud(updated);
+                        showToast(`Đã cập nhật hồ sơ của ${name}`);
+                    }
+                } else {
+                    const newStudent = {
+                        id: "stu_" + Date.now(),
+                        code,
+                        name,
+                        className,
+                        points,
+                        role: getHierarchyInfo(getCurrentStudent()).canManageRoles ? role : "STUDENT",
+                        subjects: subjects.length > 0 ? subjects : ["Học tập chung"],
+                        bio,
+                        avatarColor: palette[state.students.length % palette.length]
+                    };
+                    state.students.push(newStudent);
+                    await saveStudentToCloud(newStudent);
+                    showToast(`Đã thêm học sinh ${name} (${code}) vào hệ thống`);
+                }
+
+                this.closeModal("modalStudent");
+                refreshAllViews();
+            },
+
+            confirmDeleteStudent(studentId) {
+                const st = state.students.find(s => s.id === studentId);
+                if (!st) return;
+                document.getElementById("confirmTitle").textContent = "Xóa hồ sơ học sinh";
+                document.getElementById("confirmMessage").textContent = `Bạn có chắc muốn xóa hồ sơ của "${st.name}" (${st.code}) khỏi hệ thống lưu trữ?`;
+                const btn = document.getElementById("confirmActionBtn");
+                btn.onclick = async () => {
+                    state.students = state.students.filter(s => s.id !== studentId);
+                    this.closeModal("modalConfirm");
+                    await deleteStudentFromCloud(studentId);
+                    refreshAllViews();
+                    showToast(`Đã xóa hồ sơ học sinh ${st.name}`, "warning");
+                };
+                document.getElementById("modalConfirm").classList.remove("hidden");
+            },
+
+            exportStudentsCSV() {
+                const headers = ["Mã HS", "Họ và Tên", "Lớp", "Cấp Bậc", "Điểm Tích Lũy", "Môn Thế Mạnh", "Ghi Chú"];
+                const rows = state.students.map(st => {
+                    const rank = getHierarchyInfo(st);
+                    return [
+                        st.code,
+                        `"${(st.name || '').replace(/"/g, '""')}"`,
+                        st.className,
+                        `"${rank.label}"`,
+                        st.points || 0,
+                        `"${(Array.isArray(st.subjects) ? st.subjects.join('; ') : '').replace(/"/g, '""')}"`,
+                        `"${(st.bio || '').replace(/"/g, '""')}"`
+                    ].join(",");
+                });
+                const csvContent = "\uFEFF" + [headers.join(","), ...rows].join("\n");
+                const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+                const url = URL.createObjectURL(blob);
+                const link = document.createElement("a");
+                link.href = url;
+                link.setAttribute("download", `Ho_So_Hoc_Sinh_EduForum.csv`);
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                showToast("Đã xuất danh sách hồ sơ học sinh ra file CSV!");
+            },
+
+            closeModal(modalId) {
+                document.getElementById(modalId)?.classList.add("hidden");
+            }
+        };
+
+        // Initialize UI & Cloud Storage on load
+        window.addEventListener("DOMContentLoaded", () => {
+            refreshAllViews();
+            initCloudStorage();
+        });
+    </script>
+</body>
+</html>
